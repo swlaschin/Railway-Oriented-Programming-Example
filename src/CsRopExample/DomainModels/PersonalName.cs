@@ -1,5 +1,8 @@
-﻿namespace CsRopExample.Models
+﻿namespace CsRopExample.DomainModels
 {
+    /// <summary>
+    /// Represents a PersonalName in the domain. 
+    /// </summary>
     public class PersonalName
     {
         // private constructor to force use of static
@@ -12,11 +15,14 @@
         /// </summary>
         public static PersonalName Create(string first, string last)
         {
+            // Do validation. Note that validation occurs both here and in the DTO, 
+            // and so lengths, etc, must be synchronized.
+
             if (string.IsNullOrEmpty(first)) { return null; }
-            if (first.Length > 50) return null;
+            if (first.Length > 10) return null;  // make them short for testing!
 
             if (string.IsNullOrEmpty(last)) { return null; }
-            if (last.Length > 50) return null;
+            if (last.Length > 10) return null;
 
 
             return new PersonalName { First = first, Last = last };

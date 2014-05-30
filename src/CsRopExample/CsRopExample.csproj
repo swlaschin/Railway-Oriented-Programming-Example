@@ -72,15 +72,20 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Controllers\CustomersController.cs" />
+    <Compile Include="Database\DbCustomer.cs" />
+    <Compile Include="Database\SqlException.cs" />
+    <Compile Include="Database\SqlDatabase.cs" />
     <Compile Include="Database\CustomerRepository.cs" />
     <Compile Include="Database\DataStoreException.cs" />
     <Compile Include="Database\ICustomerRepository.cs" />
     <Compile Include="DependencyResolver.cs" />
-    <Compile Include="Models\DtoConverter.cs" />
-    <Compile Include="Models\PersonalName.cs" />
-    <Compile Include="Models\EmailAddress.cs" />
-    <Compile Include="Models\Customer.cs" />
-    <Compile Include="Models\CustomerDto.cs" />
+    <Compile Include="DomainModels\DomainEvents.cs" />
+    <Compile Include="Dtos\DtoConverter.cs" />
+    <Compile Include="DomainModels\CustomerId.cs" />
+    <Compile Include="DomainModels\PersonalName.cs" />
+    <Compile Include="DomainModels\EmailAddress.cs" />
+    <Compile Include="DomainModels\Customer.cs" />
+    <Compile Include="Dtos\CustomerDto.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Startup.cs" />

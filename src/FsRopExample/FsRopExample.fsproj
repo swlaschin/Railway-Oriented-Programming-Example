@@ -82,6 +82,11 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Rop.fs" />
+    <Compile Include="CommonTypes.fsi" />
+    <Compile Include="CommonTypes.fs" />
+    <Compile Include="DomainModel.fs" />
+    <Compile Include="DataStore.fs" />
     <Compile Include="Controllers.fs" />
     <Compile Include="Program.fs" />
     <None Include="App.config" />

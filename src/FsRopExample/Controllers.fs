@@ -7,10 +7,54 @@ open System.Web.Http
 open System.Web.Http.Dispatcher
 open System.Net.Http.Formatting
 
-type CustomerController() =
+open Rop
+open DomainModel
+open DataStore
+
+type CustomerController(repository:ICustomerRepository) =
     inherit ApiController()
 
-    // GET api/values 
+    // wrap the repo in a safe handler
+    let safeGetAll() =
+        try
+            repository.GetAll() |> succeed
+        with
+        | DataStoreException msg ->
+            fail (DatabaseError msg)
+
+    // wrap the repo in a safe handler
+    let safeGetId id =
+        try
+            repository.GetById id |> succeed
+        with
+        | DataStoreException msg ->
+            fail (DatabaseError msg)
+
+
+    [<Route("customers/example")>]
+    [<HttpGet>]
+    member this.GetExample() : IHttpActionResult = 
+        let dto = {CustomerDto.FirstName = "Alice"; LastName = "Adams"; Email = "alice@example.com"}
+        this.Ok(dto) |> upcast
+
+    [<Route("customers/")>]
+    [<HttpGet>]
+    member this.Get() : IHttpActionResult = 
+    {
+        safeGetAll
+        >> map (fun cust )
+        try
+        {
+            var custs = _repository.GetAll();
+            var dtos = custs.Select(DtoConverter.ToDto);
+            return Ok(dtos);
+        }
+        catch (DataStoreException ex)
+        {
+            return this.InternalServerError(ex);
+        }
+    }
+
     member this.Get()  =
         ["value1";"value2"]
 
