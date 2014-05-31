@@ -16,7 +16,7 @@ namespace CsRopExample
             var correlationId = string.Format("{0}{1}", DateTime.Now.Ticks, Thread.CurrentThread.ManagedThreadId);
             var requestInfo = string.Format("{0} {1}", request.Method, request.RequestUri);
             var message = request.Content.ReadAsStringAsync().Result;
-            Debug.WriteLine("{0} - Request: {1}\r\n{2}", correlationId, requestInfo, message);
+            Debug.WriteLine("[HTTP]Request: {1}\r\n[HTTP]{2}\r\n\r\n", correlationId, requestInfo, message);
             return request;
         }
 
@@ -27,7 +27,7 @@ namespace CsRopExample
             var message = response.Content != null 
                 ? response.Content.ReadAsStringAsync().Result 
                 : "[no body]";
-            Debug.WriteLine("{0} - Response: {1}\r\n{2}", correlationId, requestInfo, message);
+            Debug.WriteLine("[HTTP]Response: {1}\r\n[HTTP]{2}\r\n\r\n", correlationId, requestInfo, message);
             return response;
         }
     }

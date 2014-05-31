@@ -13,7 +13,7 @@ open global.Owin
 type ControllerResolver() =
     inherit System.Web.Http.Dispatcher.DefaultHttpControllerTypeResolver()
 
-    override this.GetControllerTypes (assembliesResolver:System.Web.Http.Dispatcher.IAssembliesResolver) = 
+    override this.GetControllerTypes (_:System.Web.Http.Dispatcher.IAssembliesResolver) = 
         let t = typeof<System.Web.Http.Controllers.IHttpController>
         System.Reflection.Assembly.GetExecutingAssembly().GetTypes()
         |> Array.filter t.IsAssignableFrom

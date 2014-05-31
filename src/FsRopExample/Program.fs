@@ -5,7 +5,7 @@ open System
 open FsRopExample
 
 [<EntryPoint>]
-let main argv = 
+let main _ = 
     let baseAddress = "http://localhost:9001/"
     use app = Microsoft.Owin.Hosting.WebApp.Start<Startup>(baseAddress)
 

@@ -230,7 +230,7 @@ namespace CsRopExample.Controllers
         /// </summary>
         private static void Log(string format, params object[] objs)
         {
-            Debug.WriteLine(format, objs);
+            Debug.WriteLine("[LOG]" + format, objs);
         }
     }
 }

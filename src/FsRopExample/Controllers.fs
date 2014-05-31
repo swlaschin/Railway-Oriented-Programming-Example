@@ -158,7 +158,7 @@ type CustomersController (csDao:CsRopExample.DataAccessLayer.ICustomerDao, fsDao
     // =================================
 
     let log format (objs:obj[]) = 
-        System.Diagnostics.Debug.WriteLine(format,objs)
+        System.Diagnostics.Debug.WriteLine("[LOG]" + format,objs)
 
     // log values on the success path
     let logSuccessR format result = 
@@ -208,6 +208,7 @@ type CustomersController (csDao:CsRopExample.DataAccessLayer.ICustomerDao, fsDao
     //==============================================
     // Get a customer, with and without error handling
     //==============================================
+
 
     /// Get one customer, without error handling
     [<Route("customers/{customerId}")>]

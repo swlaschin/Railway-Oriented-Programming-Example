@@ -104,14 +104,11 @@ let toDbCustomer(cust:Customer) =
 /// a set of choices that that can be matched on later.
 /// This uses the "active patterns" feature of F#.
 let (|KeyNotFound|DuplicateKey|Timeout|Other|) (ex:SqlException) =
-    if ex.Message = "KeyNotFound" then 
-        KeyNotFound
-    else if ex.Message = "DuplicateKey" then 
-        DuplicateKey
-    else if ex.Message = "Timeout" then 
-        Timeout
-    else 
-        Other
+    match ex.Data0 with 
+    | "KeyNotFound" -> KeyNotFound
+    | "DuplicateKey" -> DuplicateKey
+    | "Timeout" -> Timeout
+    | _ -> Other
 
 /// An implementation of a ICustomerDao 
 type CustomerDao() =
