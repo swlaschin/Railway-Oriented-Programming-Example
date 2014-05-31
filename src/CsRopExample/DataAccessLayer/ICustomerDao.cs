@@ -1,9 +1,12 @@
 ﻿using System.Collections.Generic;
 using CsRopExample.DomainModels;
 
-namespace CsRopExample.Database
+namespace CsRopExample.DataAccessLayer
 {
-    public interface ICustomerRepository
+    /// <summary>
+    /// This is a data access wrapper around a SQL database
+    /// </summary>
+    public interface ICustomerDao
     {
         /// <summary>
         /// Return all customers
@@ -16,8 +19,10 @@ namespace CsRopExample.Database
         Customer GetById(CustomerId id);
 
         /// <summary>
-        /// Add the customer to the collection. If it already exists, update it
+        /// Insert/update the customer 
+        /// If it already exists, update it, otherwise insert it.
+        /// If the email address has changed, raise a EmailAddressChanged event on DomainEvents
         /// </summary>
-        void Add(Customer customer);
+        void Upsert(Customer customer);
     }
 }

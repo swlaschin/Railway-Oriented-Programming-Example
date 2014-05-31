@@ -6,8 +6,14 @@ using System.Web.Http.Dependencies;
 namespace CsRopExample
 {
     /// <summary>
-    /// Simple implementation of DI
+    /// A simple implementation of DI for use in WebApi.
+    /// The reason we implement this is that we need to inject services into the
+    /// controller, which requires setting a IDependencyResolver in the HttpConfiguration.
     /// </summary>
+    /// <remarks>
+    /// Note that Controllers are created per request. 
+    /// So we register a lambda that constructs them on demand, rather than a singleton instance.
+    /// </remarks>
     internal class DependencyResolver : IDependencyResolver
     {
         private readonly Dictionary<Type, Func<object>> _registeredTypes = new Dictionary<Type, Func<object>>();

@@ -14,13 +14,16 @@ namespace CsRopExample.DomainModels
         }
 
         /// <summary>
-        /// Create a new email address from a string. If not valid, return null
+        /// Create a new EmailAddress from a string. If not valid, return null
         /// </summary>
         public static EmailAddress Create(string email)
         {
             // Do validation. Note that validation occurs both here and in the DTO, 
             // and so regex, length, etc, must be synchronized.
-
+            //
+            // Compare this with the F# version, where the domain object
+            // contains its own validation as part of its definition,
+            // and there is no validation on the DTO itself.
             if (string.IsNullOrEmpty(email)) { return null; }
             if (!email.Contains("@")) { return null; }
             if (email.Length > 20) return null;  // make short for testing!

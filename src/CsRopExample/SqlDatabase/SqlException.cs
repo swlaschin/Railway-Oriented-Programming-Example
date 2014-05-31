@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.Serialization;
 
-namespace CsRopExample.Database
+namespace CsRopExample.SqlDatabase
 {
     [Serializable]
     public class SqlException : Exception

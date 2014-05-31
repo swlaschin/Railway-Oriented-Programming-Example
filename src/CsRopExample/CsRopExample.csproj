@@ -19,7 +19,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
+    <OutputPath>..\..\bin\CsRopExample\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -71,13 +71,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="MessageLoggingHandler.cs" />
     <Compile Include="Controllers\CustomersController.cs" />
-    <Compile Include="Database\DbCustomer.cs" />
-    <Compile Include="Database\SqlException.cs" />
-    <Compile Include="Database\SqlDatabase.cs" />
-    <Compile Include="Database\CustomerRepository.cs" />
-    <Compile Include="Database\DataStoreException.cs" />
-    <Compile Include="Database\ICustomerRepository.cs" />
+    <Compile Include="SqlDatabase\DbCustomer.cs" />
+    <Compile Include="SqlDatabase\SqlException.cs" />
+    <Compile Include="SqlDatabase\DbContext.cs" />
+    <Compile Include="DataAccessLayer\CustomerDao.cs" />
+    <Compile Include="DataAccessLayer\ICustomerDao.cs" />
     <Compile Include="DependencyResolver.cs" />
     <Compile Include="DomainModels\DomainEvents.cs" />
     <Compile Include="Dtos\DtoConverter.cs" />

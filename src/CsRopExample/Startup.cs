@@ -1,6 +1,6 @@
 ﻿using System.Web.Http;
 using CsRopExample.Controllers;
-using CsRopExample.Database;
+using CsRopExample.DataAccessLayer;
 using Owin;
 
 namespace CsRopExample
@@ -18,6 +18,9 @@ namespace CsRopExample
             ConfigureDependencies(config);
             ConfigureJsonSerialization(config);
 
+            // add logging
+            config.MessageHandlers.Add(new MessageLoggingHandler());
+
             appBuilder.UseWebApi(config);
         }
 
@@ -26,11 +29,20 @@ namespace CsRopExample
             config.MapHttpAttributeRoutes();
         }
 
+        /// <summary>
+        /// Setup the dependency injection for controllers.
+        /// </summary>
         private static void ConfigureDependencies(HttpConfiguration config)
         {
             var dependencyResolver = new DependencyResolver();
-            var repository = new CustomerRepository();
-            dependencyResolver.RegisterType<CustomersController>(() => new CustomersController(repository));
+
+            // create the service to be injected
+            var customerDao = new CustomerDao();
+
+            // setup a constructor for a CustomersController
+            dependencyResolver.RegisterType<CustomersController>(() => new CustomersController(customerDao));
+
+            // assign the resolver to the config
             config.DependencyResolver = dependencyResolver;
         }
 

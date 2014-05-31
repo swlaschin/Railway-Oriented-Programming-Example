@@ -3,13 +3,13 @@ using CsRopExample.DomainModels;
 
 namespace CsRopExample.Dtos
 {
-    static class DtoConverter
+    public static class DtoConverter
     {
 
         /// <summary>
         /// Create a domain customer from a DTO or null if not valid.
         /// </summary>
-        public static Customer FromDto(CustomerDto dto)
+        public static Customer DtoToCustomer(CustomerDto dto)
         {
             if (dto == null)
             {
@@ -26,12 +26,15 @@ namespace CsRopExample.Dtos
 
 
         /// <summary>
-        /// Create a DTO from a domain customer 
+        /// Create a DTO from a domain customer or null if the customer is null
         /// </summary>
-        public static CustomerDto ToDto(Customer customer)
+        public static CustomerDto CustomerToDto(Customer customer)
         {
             // we should never try to convert a null customer
-            if (customer == null) { throw new ArgumentNullException("customer"); }
+            if (customer == null)
+            {
+                return null;
+            }
 
             return new CustomerDto
             {

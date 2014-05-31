@@ -12,11 +12,11 @@
         }
 
         /// <summary>
-        /// Create a new email address from a string. If not valid, return null
+        /// Create a new CustomerId from an int. If not valid, return null
         /// </summary>
         public static CustomerId Create(int id)
         {
-            if (id < 0) return null;
+            if (id < 1) return null;
 
             return new CustomerId { Id= id};
         }

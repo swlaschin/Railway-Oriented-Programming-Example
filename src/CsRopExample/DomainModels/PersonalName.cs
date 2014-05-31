@@ -18,6 +18,10 @@
             // Do validation. Note that validation occurs both here and in the DTO, 
             // and so lengths, etc, must be synchronized.
 
+            // Compare this with the F# version, where the domain object
+            // contains its own validation as part of its definition,
+            // and there is no validation on the DTO itself.
+
             if (string.IsNullOrEmpty(first)) { return null; }
             if (first.Length > 10) return null;  // make them short for testing!
 

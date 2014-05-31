@@ -19,6 +19,9 @@
             if (name == null) { return null; }
             if (email == null) { return null; }
 
+            // Compare this with the F# version, where the domain object
+            // doesn't need to check for nulls
+
             return new Customer { Id = id, Name = name, EmailAddress = email };
         }
 

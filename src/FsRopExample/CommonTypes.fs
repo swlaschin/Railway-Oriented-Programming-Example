@@ -1,25 +1,41 @@
-﻿module CommonTypes
-
-type String10 = String10 of string
-type String20 = String20 of string
-type EmailAddress = EmailAddress of String20
+﻿module FsRopExample.CommonTypes
 
 
-let createString10 (s:string) =
-    match s with
-    | null -> None
-    | _ when s.Length > 10 -> None
-    | _ -> String10 s |> Some
-    
-let createString20 (s:string) =
-    match s with
-    | null -> None
-    | _ when s.Length > 20 -> None
-    | _ -> String20 s |> Some
+module String10 =
+    type T = String10 of string
 
-let createEmail (s:string) =
-    match createString20 s with
-    | None -> None
-    | Some s' when s.Contains("@") -> 
-        EmailAddress s' |> Some
-    | _ -> None
+    let create (s:string) =
+        match s with
+        | null -> None
+        | _ when s.Length > 10 -> None
+        | _ -> String10 s |> Some
+
+    let apply f (String10 s) =
+        f s
+
+module String20 =
+    type T = String20 of string
+
+    let create (s:string) =
+        match s with
+        | null -> None
+        | _ when s.Length > 20 -> None
+        | _ -> String20 s |> Some
+
+    let apply f (String20 s) =
+        f s
+
+module EmailAddress =
+    type T = EmailAddress of String20.T
+
+    let create (s:string) =
+        match String20.create s with
+        | None -> None
+        | Some s' when s.Contains("@") -> 
+            EmailAddress s' |> Some
+        | _ -> None
+
+    let apply f (EmailAddress s20) =
+        let s = s20 |> String20.apply id
+        f s
+
