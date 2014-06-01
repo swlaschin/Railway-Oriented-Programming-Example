@@ -465,7 +465,7 @@ That is because in F# you cannot use forward references (code that hasn't been s
 Although you might think this is annoying at first, it is actually very helpful, because otherwise you might
 create cyclic dependencies, and [cyclic dependencies are evil](http://fsharpforfunandprofit.com/posts/cyclic-dependencies/).
 
-On a more practical level, in means that a F# project can always be read from top to bottom, with lower-level
+On a more practical level, it means that a F# project can always be read from top to bottom, with lower-level
 layers at the top of the file list, and higher-level layers at the bottom.
 
 Once you get used to it, this becomes a great aid to understanding unfamiliar code.
@@ -480,6 +480,6 @@ If you have any corrections or suggestions to improve this code, please create a
 
 Thanks!
 
-Scott
+-- Scott
 
 
