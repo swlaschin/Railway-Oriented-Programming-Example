@@ -21,12 +21,14 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <Tailcalls>false</Tailcalls>
-    <OutputPath>bin\Debug\</OutputPath>
+    <OutputPath>..\..\bin\FsRopExample\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <WarningLevel>3</WarningLevel>
     <PlatformTarget>AnyCPU</PlatformTarget>
-    <DocumentationFile>bin\Debug\FsRopExample.XML</DocumentationFile>
+    <DocumentationFile>
+    </DocumentationFile>
     <Prefer32Bit>true</Prefer32Bit>
+    <OtherFlags>--warnon:1182</OtherFlags>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -82,9 +84,27 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Rop.fs" />
+    <Compile Include="DomainPrimitiveTypes.fsi" />
+    <Compile Include="DomainPrimitiveTypes.fs" />
+    <Compile Include="DomainModel.fs" />
+    <Compile Include="SqlDatabase.fs" />
+    <Compile Include="DataAccessLayer.fs" />
+    <Compile Include="Dtos.fs" />
+    <Compile Include="Controllers.fs" />
+    <Compile Include="DependencyResolver.fs" />
+    <Compile Include="MessageLoggingHandler.fs" />
+    <Compile Include="Startup.fs" />
     <Compile Include="Program.fs" />
     <None Include="App.config" />
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\CsRopExample\CsRopExample.csproj">
+      <Name>CsRopExample</Name>
+      <Project>{fb6c4afc-3185-4e58-9b89-f20a5b276ccc}</Project>
+      <Private>True</Private>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>
