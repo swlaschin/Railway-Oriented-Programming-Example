@@ -215,10 +215,10 @@ type CustomersController (csDao:CsRopExample.DataAccessLayer.ICustomerDao, fsDao
     [<HttpGet>]
     member this.Get(customerId:int) : IHttpActionResult =
         customerId
-        |> csCreateCustomerId 
-        |> csGetById 
-        |> csCustomerToDto 
-        |> ok
+        |> csCreateCustomerId   // convert the int into a CustomerId
+        |> csGetById            // get the Customer for that CustomerId
+        |> csCustomerToDto      // convert the Customer into a DTO
+        |> ok                   // return OK -- no tests for errors 
 
     /// Get one customer, with error handling
     ///
@@ -230,14 +230,14 @@ type CustomersController (csDao:CsRopExample.DataAccessLayer.ICustomerDao, fsDao
     [<Route("customersE/{customerId}")>]
     [<HttpGet>]
     member this.GetWithErrorHandling(customerId:int) : IHttpActionResult =
-        succeed customerId
-        |> logSuccessR "GetWithErrorHandling {0}" 
-        |> createCustomerIdR 
-        |> getByIdR 
-        |> customerToDtoR
-        |> logFailureR
-        |> okR
-        |> toHttpResult
+        succeed customerId      // start with a success 
+        |> logSuccessR "GetWithErrorHandling {0}"  // log the success branch
+        |> createCustomerIdR    // convert the int into a CustomerId
+        |> getByIdR             // get the Customer for that CustomerId
+        |> customerToDtoR       // convert the Customer into a DTO
+        |> logFailureR          // log any errors
+        |> okR                  // return OK on the happy path
+        |> toHttpResult         // other errors returned as BadRequest, etc
 
 
     //==============================================
@@ -250,10 +250,10 @@ type CustomersController (csDao:CsRopExample.DataAccessLayer.ICustomerDao, fsDao
     [<Route("customers/{customerId}")>]
     [<HttpPost>]
     member this.Post(customerId:int, [<FromBody>] dto:CsRopExample.Dtos.CustomerDto) :IHttpActionResult  =
-        dto.Id <- customerId
-        let cust = csDtoToCustomer dto
-        csDao.Upsert(cust)
-        ok()
+        dto.Id <- customerId            // set the DTO's CustomerId
+        let cust = csDtoToCustomer dto  // convert the DTO to a Customer
+        csDao.Upsert(cust)              // upsert the Customer
+        ok()                            // return OK -- no tests for errors  
        
     /// <summary>
     /// Upsert a customer, with error handling
@@ -270,16 +270,16 @@ type CustomersController (csDao:CsRopExample.DataAccessLayer.ICustomerDao, fsDao
     [<HttpPost>]
     member this.PostWithErrorHandling(customerId:int, [<FromBody>] dto:CustomerDto) :IHttpActionResult  =
         
-        dto.Id <- customerId
+        dto.Id <- customerId               // set the DTO's CustomerId
 
-        succeed dto
-        |> logSuccessR "POST with {0}"
-        |> dtoToCustomerR
-        |> upsertCustomerR
-        |> logFailureR
-        |> notifyCustomerWhenEmailChangedR
-        |> okR
-        |> toHttpResult
+        succeed dto                        // start with a success 
+        |> logSuccessR "POST with {0}"     // log the success branch
+        |> dtoToCustomerR                  // convert the DTO to a Customer
+        |> upsertCustomerR                 // upsert the Customer
+        |> logFailureR                     // log any errors
+        |> notifyCustomerWhenEmailChangedR // handle the EmailChangedEvent if present
+        |> okR                             // return OK on the happy path  
+        |> toHttpResult                    // other errors returned as BadRequest, etc 
 
     // =========================================
     // Debugging and helpers

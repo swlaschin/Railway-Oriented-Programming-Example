@@ -10,23 +10,25 @@ where there are slides and videos that explain the concepts in more detail.
 
 There are two scenarios that I will use in this example:
 
-* **Get a customer**. The steps are:
-  * Validate the input params.
-  * Fetch the customer from the database.
-  * Convert the customer into a DTO. 
-  * Return the DTO or the appropriate error.
+**Get a customer**. The steps are:
 
-* **Add or update a customer**. The steps are:
-  * Validate the input params.
-  * Convert the DTO into customer.
-  * Insert or update the customer in the database.
-  * If the customer's email has changed, send them a notification.
-  * Return OK or the appropriate error.
+* Validate the input params.
+* Fetch the customer from the database.
+* Convert the customer into a DTO. 
+* Return the DTO or the appropriate error.
+
+**Add or update a customer**. The steps are:
+
+* Validate the input params.
+* Convert the DTO into customer.
+* Insert or update the customer in the database.
+* If the customer's email has changed, send them a notification.
+* Return OK or the appropriate error.
   
 Each scenario is implemented twice, in both C# and F#.
 The first implementation has no error handling, while the second implementation has complete error handling.
 
-These implementations will demonstrate that error handling is very complex in C#, while in F#, using the 
+These implementations demonstrate that error handling is very complex in C#, while in F#, using the 
 Railway Oriented Programming approach, the error handling code is just as simple as the non-error-handling code.
 
 ## Running the code
@@ -40,7 +42,7 @@ Both projects are self-hosting OWIN web services. You can run the EXEs and inter
   The binaries are output to the `\bin` folder
 * **To run the code,** just run the EXEs from each folder.
   The C# service runs on localhost:9000 and the F# service runs on localhost:9001
-* **To interact with the services,** use REST testing tool like [Postman](http://www.getpostman.com/).
+* **To interact with the services,** use a REST testing tool like [Postman](http://www.getpostman.com/).
 
 
 The API is:
@@ -63,10 +65,10 @@ Bonus: Set the id to 42 when posting to emulate a database timeout exception.
 The design of both projects is similar, and can be grouped into the following layers or subsystems:
 
 * There is a domain model that contains the definition of a `Customer` object.
-* There is an in-memory "SqlDatabase" that stores customers
-* There is a Data Access Layer that provides a wrapper on top of the sql database
-* There is a `CustomerDto` type that is a flattened, "dumb" version of the domain type
-* There is a `CustomersController` that provides the endpoint for the service
+* There is an in-memory "SqlDatabase" that stores customers.
+* There is a Data Access Layer that provides a wrapper on top of the sql database.
+* There is a `CustomerDto` type that is a flattened, "dumb" version of the domain type.
+* There is a `CustomersController` that provides the endpoint for the service.
 * Finally, there is the infrastructure, setup and configuration.
 
 
@@ -74,7 +76,7 @@ The design of both projects is similar, and can be grouped into the following la
 
 *(The C# code is in the `DomainModels` folder. The F# code is in the `DomainModel.fs` and `DomainPrimitiveTypes.fs` files.)*
 
-The domain model contains the definition of a `Customer` object and its components:
+The domain model contains the definition of a `Customer` object and its subcomponents:
 
 * `CustomerId`
 * `PersonalName`
@@ -94,19 +96,21 @@ For example:
 
 **C# version**
 
-In C# I use a static method to valid and create them. ([More C# tips](http://lostechies.com/jimmybogard/2007/12/03/dealing-with-primitive-obsession/))
+In C# I use static methods to validate and create domain types. ([C# tips to avoid primitive obsession](http://lostechies.com/jimmybogard/2007/12/03/dealing-with-primitive-obsession/)).
 
-Even so, there are some issues with these kinds of types in C#
-* You have to add code for equality
-* They are allowed to be null, so when building a compound type (such as `Customer`) out of smaller types, 
+Even so, there are some issues with these kinds of types in C#:
+
+* 1) You have to add code for equality
+* 2) They are allowed to be null, so when building a compound type (such as `Customer`) out of smaller types, 
   we still have to check for null.
-* In the constructor there is no nice way to handle failed creations. Typically you would return null
-  and perhaps throw an exception such as `InvalidCastException`.
+* 3) In the constructor there is no nice way to handle failed creations. Typically you would return null
+  and perhaps throw an exception such as `ArgumentException` or `InvalidCastException`.
 
 **F# version**
 
 In F#, I have created primitive types for `String10`, `EmailAddress`, `CustomerId`, etc. 
-The F# equivalent of a private constructor is to use signature files. In this case, you can hide the internals of the
+
+The F# equivalent of a private constructor is to use signature files. With this technique, you can hide the internals of the
 type completely (an opaque type) so that users of the type are forced to use the helper functions 
 to create and access the data inside.
 
@@ -127,6 +131,7 @@ to the domain-level error codes as appropriate.
 
 For example, when creating a first name, the primitive-level error `Missing` 
 is converted into the domain-level error `FirstNameIsRequired`.
+See the `createEmail` function in `DomainModel.fs` for another example of this mapping.
 
 
 ## The "sql database"  layer
@@ -144,7 +149,7 @@ The entry point is a class called `DbContext`. It has the following methods:
 I have also added a special case -- if the customerId is 42, throw a "Timeout" exception.
 
 The customer objects returned by the database are `DbCustomer` objects, which are not domain objects, so they
-need to be mapped to the domain object on the way in or out.  This is done by the Data Access Layer.
+need to be mapped to the domain object on the way in or out.  This is done by the Data Access Layer (described next).
 
 The C# code and the F# code are identical. This means that I had to add extra code in F# to
 allow the `DbCustomer` class to be nullable, and for the properties to be nullable.  
@@ -178,20 +183,19 @@ The C# and F# versions of this DAO are very different.
 
 **C# version**
 
+Let's start with getting a customer.
 For `GetById`, what should the implementation do if the customer is not found?
 
-In this implementation, I just chose to return null.  You could throw an exception, but that 
+In this C# implementation, I just chose to return null.  You could throw an exception, but that 
 seems like overkill for such a common case.
 
 Also, what should happen if the database throws an exception? For example, as noted above, this
-database will throw a timeout if the customer id is 42!
+database will throw a timeout if the customer id is 42.
 
-In this implementation, I just chose to ignore exceptions and let the caller catch them.
+In this implementation, I chose to ignore exceptions and let the caller catch them.
 
-Another problem that might arise is if the domain `Customer` cannot be constructed from a `DbCustomer` object.
-This could happen if the database has a null email, for example.
-
-What should happen in this case? 
+Another problem that might arise is if the domain `Customer` cannot be reconstructed from a persisted `DbCustomer` object.
+This could happen if the database has a null email, for example. What should happen in this case? 
 
 In the C# code we just ignore the conversion error.
 
@@ -200,30 +204,31 @@ In the C# code we just ignore the conversion error.
 The F# version is very different from the C# version.
 
 Because errors and messages can be passed back in the function result, the `ICustomerDao` interface
-has Success/Failure results rather than plain customers.
+has Success/Failure results rather than Customers or voids.
 
 So in the implementation of `GetById`, if the customer is not found, we return a `CustomerNotFound` code explicitly
+in the result.
 
-Unlike the C# code, the F# implementation can trap exceptions and turn them into clean error codes.
-This means that the clients of the F# implementation never have to trap exceptions at all.
+The same technique can be used to trap exceptions and turn them into clean error codes.
+This means that, unlike the C# code, the clients of the F# implementation never have to trap exceptions at all.
 
 So for example, if the Sql database throws a Timeout exception, the CustomerDao traps that and turns it into
 a DatabaseTimeout error code.
 
-Finally, what about if the domain `Customer` cannot be constructed from a `DbCustomer` object?
+Finally, what about the case when the domain `Customer` cannot be reconstructed from a `DbCustomer` object?
 
-In the F# we can't ignore it by accident, as the type system won't let us!  In this case, I did choose to ignore it
-(see line 140 in `DataAccessLayer.fs`) but we could choose to take other actions.
+In the F# we can't ignore the errors by accident, as the type system won't let us!  In this case, I did choose to ignore it
+(see line 140 in `DataAccessLayer.fs`) but we could choose to take other actions, such as logging them for manual correction.
 
 **The EmailAddressChanged event**
 
-How should we trigger the email changed event?
+One of the requirements in the "update" scenario is to send a notification to the customer if their email changes.
 
-We need to load the existing record and compare it with the incoming record. But where to do this?
+To do this, we need to load the existing record and compare it with the incoming record. But where to do this?
 
 Rather than expose the details of the database to the caller, I put this test inside the `CustomerDao` itself.
 
-In the C# version, there is no easy way to indicate to the caller what events happened, so I chose to use a [static
+In the C# version, there is no easy way to indicate to the caller what events happened, so I use a [static
 `DomainEvents` class as a broker](http://lostechies.com/jimmybogard/2010/04/08/strengthening-your-domain-domain-events/).
 
 The CustomerDao triggers the event on the DomainEvents, and any interested parties can hook into the event to handle it.
@@ -245,12 +250,12 @@ The caller can then decide to process that event or not, and there is no global 
 *(The C# code is in the `Dtos` folder. The F# code is in the `Dtos.fs` file.)*
 
 There is a `CustomerDto` type that is a flattened, "dumb" version of the domain type. This is what is used on the wire
-for more input and output.
+for serializing requests and responses.
 
-Along with the DTO, we need some associated conversion utilities, converting from a DTO to a domain Customer and back.
+Along with the DTO, we need some associated conversion functions which can convert from a DTO to a domain Customer and back.
 
 Converting from a domain Customer to a DTO should always succeed, but what about converting from a DTO to a domain Customer?
-There are many ways in which this might fail.
+The domain Customer is more restrictive than the DTO, so there are many ways in which this conversion might fail.
 
 **C# version**
 
@@ -262,13 +267,13 @@ A more fundamental problem with this approach is that the validation should real
 
 That is, it should not be possible to instantiate an invalid `Customer` object by any means. Nothing to do with DTOs at all. 
 
-So now we have to keep the business rules in the domain synchronized with the DTO attributes, and we are doing validation
+So now we have to keep the domain-level validation rules synchronized with the DTO attributes, and we are doing validation
 in two places.  It would be nice not to have to do that.
 
 **F# version**
 
 In the F# version, the validation is not a separate step, but a core part of the definition of the domain
-object. We literally cannot create a customer with missing first name, because the type system will not
+object. We literally cannot create a customer with a missing first name, because the type system will not
 allow it.
 
 When this approach is used, the DTO does not need any special validation at all. The creation of the customer itself
@@ -286,6 +291,27 @@ and returns a "Customer or error".
 In this way, creating a customer from possibly bad data will give you either a valid customer or a list of validation errors,
 all in one step. 
 
+Here's a code snippet using applicatives:
+
+```fsharp
+let customerIdOrError = 
+    createCustomerId dto.Id
+
+let nameOrError = 
+    createPersonalName
+    <!> createFirstName dto.FirstName
+    <*> createLastName dto.LastName
+
+createCustomer 
+<!> customerIdOrError 
+<*> nameOrError
+<*> createEmail dto.Email //inline this one
+```
+
+The `<!>` and `<*>` symbols look scary, but they always follow the same pattern, and it's no more difficult to understand
+than any OO pattern, such as visitor or MVC.
+
+
 ## The Controllers 
 
 *(The C# code is in the `Controllers` folder. The F# code is in the `Controllers.fs` file.)*
@@ -294,7 +320,7 @@ Finally we come to the controllers.
 
 They are standard controllers, using attributes to indicate the routes they handle.
 
-As noted above each scenario is implemented twice, once without error handling and once with.
+As noted above, each scenario is implemented twice, once without error handling and once with.
 
 **C# version**
 
@@ -360,8 +386,9 @@ public IHttpActionResult GetWithErrorHandling(int customerId)
 
 **F# version**
 
-The F# is also straightforward if you are familiar with it.
-If you are not, you just need to know that the `|>` operator is the "pipe" symbol and just
+The F# is also straightforward if you are familiar with the way that F# works!
+
+If you are not familiar with F#, you only need to know that the `|>` operator is the "pipe" symbol and just
 connects the output of one function to the input of the next.
 
 Here is the F# code without error handling:
@@ -371,11 +398,10 @@ Here is the F# code without error handling:
 [<HttpGet>]
 member this.Get(customerId:int) : IHttpActionResult =
     customerId
-    |> csCreateCustomerId 
-    |> csGetById 
-    |> csCustomerToDto 
-    |> ok
-
+    |> csCreateCustomerId   // convert the int into a CustomerId
+    |> csGetById            // get the Customer for that CustomerId
+    |> csCustomerToDto      // convert the Customer into a DTO
+    |> ok                   // return OK -- no tests for errors 
 ```
 
 In order to throw exceptions I had to use the C# code! So I referenced the C# project from the F# project and used the C#
@@ -396,14 +422,14 @@ Now here is the F# code version with error handling added:
 [<Route("customersE/{customerId}")>]
 [<HttpGet>]
 member this.GetWithErrorHandling(customerId:int) : IHttpActionResult =
-    succeed customerId
-    |> logSuccessR "GetWithErrorHandling {0}" 
-    |> createCustomerIdR 
-    |> getByIdR 
-    |> customerToDtoR
-    |> logFailureR
-    |> okR
-    |> toHttpResult
+    succeed customerId      // start with a success 
+    |> logSuccessR "GetWithErrorHandling {0}"  // log the success branch
+    |> createCustomerIdR    // convert the int into a CustomerId
+    |> getByIdR             // get the Customer for that CustomerId
+    |> customerToDtoR       // convert the Customer into a DTO
+    |> logFailureR          // log any errors
+    |> okR                  // return OK on the happy path
+    |> toHttpResult         // other errors returned as BadRequest, etc
 ```
 
 I used the "R" suffix to indicate that these were normal functions that have been converted to "railway oriented" functions.
@@ -423,23 +449,26 @@ As you can see, the F# with error handling is still quite simple.
 
 ## The Infrastructure
 
-The rest of the code consists of infrastructure and configuration code.
+The rest of the code consists of infrastructure and configuration code, and is identical in the two projects.
 
 * `DependencyResolver` is a little DI class that allows the controllers to be injected with a `ICustomerDao`.
 * `MessageLoggingHandler` is a simple logger injected into the HTTP input and output.
 * `Startup` is where the WebApi is configured.
 * `Program` is, of course, the main entry point.
 
-Note that in the F# project, all the files must be in dependency order. 
-That is, you cannot use forward references to code that hasn't been seen by the compiler yet.
+## Dependency order of files
 
-Although you might think this is bad, it is actually very helpful, because otherwise you might
+One glaring difference between the C# and F# projects is that in the
+C# project, the files are listed in alphabetical order, while in the F# project, the files are in dependency order. 
+That is because in F# you cannot use forward references (code that hasn't been seen by the compiler yet).
+
+Although you might think this is annoying at first, it is actually very helpful, because otherwise you might
 create cyclic dependencies, and [cyclic dependencies are evil](http://fsharpforfunandprofit.com/posts/cyclic-dependencies/).
 
-On a more practical level, in means that an F# project can always be read from top to bottom, with lower-level
+On a more practical level, in means that a F# project can always be read from top to bottom, with lower-level
 layers at the top of the file list, and higher-level layers at the bottom.
 
-When you get used to it, this becomes a great aid to understanding unfamiliar code.
+Once you get used to it, this becomes a great aid to understanding unfamiliar code.
 In a C# project it can be hard to know where to start sometimes.
 
 
