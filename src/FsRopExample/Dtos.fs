@@ -78,6 +78,7 @@ module DtoConverter =
         else
             let customerIdOrError = 
                 createCustomerId dto.Id
+
             let nameOrError = 
                 createPersonalName
                 <!> createFirstName dto.FirstName
