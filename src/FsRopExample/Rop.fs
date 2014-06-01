@@ -19,7 +19,7 @@ let succeedWithMsg x msg =
 let fail msg =
     Failure [msg]
 
-/// A function that applyies either fSuccess or fFailure 
+/// A function that applies either fSuccess or fFailure 
 /// depending on the case.
 let either fSuccess fFailure = function
     | Success (x,msgs) -> fSuccess (x,msgs) 
@@ -86,7 +86,7 @@ let (<!>) = liftR
 /// synonym for liftR
 let mapR = liftR
 
-/// given an Rop, call a unit function on the success branch
+/// given an RopResult, call a unit function on the success branch
 /// and pass thru the result
 let successTee f result = 
     let fSuccess (x,msgs) = 
@@ -95,7 +95,7 @@ let successTee f result =
     let fFailure errs = Failure errs 
     either fSuccess fFailure result
 
-/// given an Rop, call a unit function on the failure branch
+/// given an RopResult, call a unit function on the failure branch
 /// and pass thru the result
 let failureTee f result = 
     let fSuccess (x,msgs) = Success (x,msgs) 
@@ -104,7 +104,7 @@ let failureTee f result =
         Failure errs 
     either fSuccess fFailure result
 
-/// given an Rop, map the errors to a different error type
+/// given an RopResult, map the messages to a different error type
 let mapMessagesR f result = 
     match result with 
     | Success (x,msgs) -> 
@@ -114,21 +114,22 @@ let mapMessagesR f result =
         let errors' = List.map f errors 
         Failure errors' 
 
-/// given an Rop, return the value in the success case 
-/// other determine the value to return by 
+/// given an RopResult, in the success case, return the value.
+/// In the failure case, determine the value to return by 
 /// applying a function to the errors in the failure case
 let valueOrDefault f result = 
     match result with 
     | Success (x,_) -> x
     | Failure errors -> f errors
 
-/// given an option, return Success if Some
+/// lift an option to a RopResult.
+/// Return Success if Some
 /// or the given message if None
 let failIfNone message = function
     | Some x -> succeed x
     | None -> fail message 
 
-/// given an Rop option, return it
+/// given an RopResult option, return it
 /// or the given message if None
 let failIfNoneR message = function
     | Some rop -> rop

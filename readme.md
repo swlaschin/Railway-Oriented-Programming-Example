@@ -36,7 +36,7 @@ Railway Oriented Programming approach, the error handling code is just as simple
 There are two projects, a C# example (`CsRopExample`) and an F# example (`FsRopExample`).
 They both implement the same simple WebApi service which supports getting and posting customers.
 
-Both projects are self-hosting OWIN web services. You can run the EXEs and interact with them through a browser.
+Both projects are self-hosted OWIN web services. You can run the EXEs and interact with them through a browser.
 
 * **To compile the code,** open up the solution file and compile in Visual Studio (sorry, no FAKE script yet!).
   The binaries are output to the `\bin` folder
@@ -48,13 +48,13 @@ Both projects are self-hosting OWIN web services. You can run the EXEs and inter
 The API is:
 
 * `GET /example` shows an example DTO that you can use for POSTing
-* `GET /customer/1` fetches the customer for that id. This is *without* error handling, so a missing customer
+* `GET /customers/1` fetches the customer for that id. This is *without* error handling, so a missing customer
   will still return 200!
-* `GET /customerE/1` fetches the customer for that id. This is *with* error handling, so a missing customer
+* `GET /customersE/1` fetches the customer for that id. This is *with* error handling, so a missing customer
   will now return 404.
-* `POST /customer/1` adds or updates the customer for that id. This is *without* error handling, so an invalid customerDto
+* `POST /customers/1` adds or updates the customer for that id. This is *without* error handling, so an invalid customerDto
   will cause an exception to be thrown. Try setting the names to blank or removing the "@" from the email address.
-* `POST /customer/1` adds or updates the customer for that id. This is *with* error handling, so an invalid customerDto
+* `POST /customersE/1` adds or updates the customer for that id. This is *with* error handling, so an invalid customerDto
   will show a nice error message with a "BadRequest" response.
 
 Bonus: Set the id to 42 when posting to emulate a database timeout exception. 
