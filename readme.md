@@ -447,6 +447,47 @@ let okR result = mapR ok result
 
 As you can see, the F# with error handling is still quite simple.
 
+## Making the error handling code look identical
+
+In the above code, I deliberately used the "cs" prefix and the "R" suffix to make the code look different.
+The intention was to clarify, not to obfuscate.
+
+Just for fun, however, here is the code made to look *exactly* the same in both cases!
+
+I'm using aliases to rename the "cs" or "R" functions locally, and also adding no ops as needed.
+
+```fsharp
+[<Route("customers2/{customerId}")>]
+[<HttpGet>]
+member this.Get2(customerId:int) : IHttpActionResult =
+    // (aliases hidden)
+
+    // real code starts here
+    customerId
+    |> createCustomerId   // convert the int into a CustomerId
+    |> getById            // get the Customer for that CustomerId
+    |> customerToDto      // convert the Customer into a DTO
+    |> logFailure         // no op
+    |> ok                 // return OK -- no tests for errors 
+    |> toHttpResult       // no op
+
+[<Route("customers2E/{customerId}")>]
+[<HttpGet>]
+member this.GetWithErrorHandling2(customerId:int) : IHttpActionResult =
+    // (aliases hidden)
+
+    // real code starts here
+    customerId      
+    |> createCustomerId     // convert the int into a CustomerId
+    |> getById              // get the Customer for that CustomerId
+    |> customerToDto        // convert the Customer into a DTO
+    |> logFailure           // log any errors
+    |> ok                   // return OK on the happy path
+    |> toHttpResult         // other errors returned as BadRequest, etc
+```
+
+You can see the actual [code here](https://github.com/swlaschin/Railway-Oriented-Programming-Example/blob/master/src/FsRopExample/Controllers.fs#L307)
+
 ## The Infrastructure
 
 The rest of the code consists of infrastructure and configuration code, and is identical in the two projects.
