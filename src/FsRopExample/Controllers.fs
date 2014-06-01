@@ -303,3 +303,100 @@ type CustomersController (csDao:CsRopExample.DataAccessLayer.ICustomerDao, fsDao
         |> mapR (Seq.map DtoConverter.customerToDto)
         |> okR
         |> toHttpResult
+
+    //==============================================
+    // FUN STUFF
+    //
+    // In the above code, I deliberately used 
+    // the "cs" prefix and the "R" suffix 
+    // to make the code look different. 
+    // The intention was to clarify, not to obfuscate.
+    // 
+    // Just for fun, however, here is the code made to 
+    // look *exactly* the same in both cases
+    // by using aliases to rename the functions locally!
+    //==============================================
+
+
+    [<Route("customers2/{customerId}")>]
+    [<HttpGet>]
+    member this.Get2(customerId:int) : IHttpActionResult =
+        // aliases
+        let createCustomerId  = csCreateCustomerId   
+        let getById           = csGetById            
+        let customerToDto     = csCustomerToDto      
+        let logFailure        = id // do nothing
+        let toHttpResult      = id // do nothing
+
+        // real code starts here
+        customerId
+        |> createCustomerId   // convert the int into a CustomerId
+        |> getById            // get the Customer for that CustomerId
+        |> customerToDto      // convert the Customer into a DTO
+        |> logFailure         // no op
+        |> ok                 // return OK -- no tests for errors 
+        |> toHttpResult       // no op
+
+    [<Route("customers2E/{customerId}")>]
+    [<HttpGet>]
+    member this.GetWithErrorHandling2(customerId:int) : IHttpActionResult =
+        // aliases
+        let createCustomerId  = createCustomerIdR    
+        let getById           = getByIdR             
+        let customerToDto     = customerToDtoR      
+        let logFailure        = logFailureR 
+        let ok                = okR 
+        let customerId        = succeed customerId      
+
+        // real code starts here
+        customerId      
+        |> createCustomerId     // convert the int into a CustomerId
+        |> getById              // get the Customer for that CustomerId
+        |> customerToDto        // convert the Customer into a DTO
+        |> logFailure           // log any errors
+        |> ok                   // return OK on the happy path
+        |> toHttpResult         // other errors returned as BadRequest, etc
+
+    //-------------------------------------------------
+    // Post a customer, with and without error handling
+
+    [<Route("customers2/{customerId}")>]
+    [<HttpPost>]
+    member this.Post2(customerId:int, [<FromBody>] dto:CsRopExample.Dtos.CustomerDto) :IHttpActionResult  =
+        // aliases and setup
+        let dtoToCustomer     = csDtoToCustomer 
+        let upsertCustomer    = csDao.Upsert
+        let logFailure        = id  // do nothing                  
+        let notifyCustomerWhenEmailChanged = id // do nothing
+        let ok                = fun _ -> ok()
+        let toHttpResult      = id // do nothing
+        let dto               = dto.Id <- customerId; dto
+
+        // real code starts here
+        dto                        
+        |> dtoToCustomer                   // convert the DTO to a Customer
+        |> upsertCustomer                  // upsert the Customer
+        |> logFailure                      // no op
+        |> notifyCustomerWhenEmailChanged  // no op
+        |> ok                              // return OK on the happy path  
+        |> toHttpResult                    // no op
+       
+    [<Route("customers2E/{customerId}")>]
+    [<HttpPost>]
+    member this.PostWithErrorHandling2(customerId:int, [<FromBody>] dto:CustomerDto) :IHttpActionResult  =
+        // aliases and setup
+        let dtoToCustomer     = dtoToCustomerR
+        let upsertCustomer    = upsertCustomerR
+        let logFailure        = logFailureR                     
+        let notifyCustomerWhenEmailChanged = notifyCustomerWhenEmailChangedR
+        let ok                = okR 
+        let dto               = dto.Id <- customerId; succeed dto
+        
+        // real code starts here
+        dto                        
+        |> dtoToCustomer                   // convert the DTO to a Customer
+        |> upsertCustomer                  // upsert the Customer
+        |> logFailure                      // log any errors
+        |> notifyCustomerWhenEmailChanged  // handle the EmailChangedEvent if present
+        |> ok                              // return OK on the happy path  
+        |> toHttpResult                    // other errors returned as BadRequest, etc 
