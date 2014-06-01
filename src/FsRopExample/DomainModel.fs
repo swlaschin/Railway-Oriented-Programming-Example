@@ -2,13 +2,12 @@
 
 open System
 open Rop
-open CommonTypes
+open DomainPrimitiveTypes
 
 // ============================== 
 // Domain models
 // ============================== 
 
-type CustomerId = CustomerId of int
 
 type PersonalName = {
     FirstName: String10.T 
@@ -16,7 +15,7 @@ type PersonalName = {
 }
 
 type Customer = {
-    Id: CustomerId 
+    Id: CustomerId.T 
     Name: PersonalName
     Email: EmailAddress.T 
 }
@@ -25,15 +24,17 @@ type Customer = {
 type DomainMessage =
 
     // Validation errors
+    // Note: I deliberate choose extremelt specific ones to 
+    // show how easy it is to have fine detail in the errors
     | CustomerIsRequired
     | CustomerIdMustBePositive
     | FirstNameIsRequired
-    | FirstNameIsTooLong
+    | FirstNameMustNotBeMoreThan10Chars
     | LastNameIsRequired
-    | LastNameIsTooLong
+    | LastNameMustNotBeMoreThan10Chars
     | EmailIsRequired
-    | EmailIsNotAValidFormat
-    | EmailIsTooLong
+    | EmailMustNotBeMoreThan20Chars
+    | EmailMustContainAtSign
 
     // Events
     | EmailAddressChanged of string * string
@@ -50,32 +51,49 @@ type DomainMessage =
 // Utility functions
 // ============================== 
 
-let createCustomerId custId = 
-    if custId < 1 then
-        fail CustomerIdMustBePositive
-    else
-        succeed (CustomerId custId)
-
 let createFirstName firstName = 
-    if String.IsNullOrWhiteSpace(firstName) then
-        fail FirstNameIsRequired
-    else
-        String10.create firstName
-        |> failIfNone FirstNameIsTooLong
+    let map = function
+        | StringError.Missing -> FirstNameIsRequired
+        | MustNotBeLongerThan _ -> FirstNameMustNotBeMoreThan10Chars
+        | DoesntMatchPattern _ -> failwithf "not expecting DoesntMatchPattern for firstName" 
+
+    // create the string and convert the messages into the ones
+    // appropriate for the domain
+    String10.create firstName
+    |> mapMessagesR map
 
 let createLastName lastName = 
-    if String.IsNullOrWhiteSpace(lastName) then
-        fail LastNameIsRequired
-    else
-        String10.create lastName
-        |> failIfNone LastNameIsTooLong
+    let map = function
+        | StringError.Missing -> LastNameIsRequired
+        | MustNotBeLongerThan _ -> LastNameMustNotBeMoreThan10Chars
+        | DoesntMatchPattern _ -> failwithf "not expecting DoesntMatchPattern for lastName" 
+
+    // create the string and convert the messages into the ones
+    // appropriate for the domain
+    String10.create lastName 
+    |> mapMessagesR map
+
 
 let createEmail email = 
-    if String.IsNullOrWhiteSpace(email) then
-        fail EmailIsRequired
-    else
-        EmailAddress.create email
-        |> failIfNone EmailIsNotAValidFormat
+    let map = function
+        | StringError.Missing -> EmailIsRequired
+        | MustNotBeLongerThan _ -> EmailMustNotBeMoreThan20Chars
+        | DoesntMatchPattern _ -> EmailMustContainAtSign
+
+    // create the EmailAddress and convert the mes sages into the ones
+    // appropriate for the domain
+    EmailAddress.create email
+    |> mapMessagesR map
+
+let createCustomerId customerId = 
+    let map = function
+        | IntegerError.Missing -> CustomerIsRequired
+        | MustBePositiveInteger _ -> CustomerIdMustBePositive
+
+    // create the CustomerId and convert the messages into the ones
+    // appropriate for the domain
+    CustomerId.create customerId
+    |> mapMessagesR map
 
 let createPersonalName firstName lastName = 
     {FirstName = firstName; LastName = lastName}

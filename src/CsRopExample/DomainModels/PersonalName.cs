@@ -1,9 +1,11 @@
-﻿namespace CsRopExample.DomainModels
+﻿using System;
+
+namespace CsRopExample.DomainModels
 {
     /// <summary>
     /// Represents a PersonalName in the domain. 
     /// </summary>
-    public class PersonalName
+    public class PersonalName : IEquatable<PersonalName>
     {
         // private constructor to force use of static
         private PersonalName()
@@ -42,5 +44,35 @@
         /// Last name property
         /// </summary>
         public string Last { get; private set; }
+
+        public override string ToString()
+        {
+            return string.Format("PersonalName {0} {1}", this.First,this.Last);
+        }
+
+        // =====================================
+        // code for equality
+        // =====================================
+
+        public override int GetHashCode()
+        {
+            return this.First.GetHashCode() ^ this.Last.GetHashCode();
+        }
+
+        public override bool Equals(object obj)
+        {
+            var other = obj as PersonalName;
+            return this.Equals(other);
+        }
+
+        public bool Equals(PersonalName other)
+        {
+            if (other == null)
+            {
+                return false;
+            }
+            return this.First.Equals(other.First) && this.Last.Equals(other.Last);
+        }
+
     }
 }

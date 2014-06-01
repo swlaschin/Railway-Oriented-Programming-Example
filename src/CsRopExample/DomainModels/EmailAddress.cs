@@ -6,6 +6,12 @@ namespace CsRopExample.DomainModels
     /// Represents a EmailAddress in the domain. 
     /// A special class is used to avoid primitive obsession and to ensure valid data
     /// </summary>
+    /// <remarks>
+    /// I have just used a private ctor and a static method to create an instance.
+    /// 
+    /// You could also provide implicit or explicit operators as documented here:
+    /// http://lostechies.com/jimmybogard/2007/12/03/dealing-with-primitive-obsession/
+    /// </remarks>
     public class EmailAddress : IEquatable<EmailAddress>
     {
         // private constructor to force use of static
@@ -36,6 +42,15 @@ namespace CsRopExample.DomainModels
         /// </summary>
         public string Email { get; private set; }
 
+        public override string ToString()
+        {
+            return string.Format("EmailAddress {0}", this.Email);
+        }
+
+        // =====================================
+        // code for equality
+        // =====================================
+
         public override int GetHashCode()
         {
             return this.Email.GetHashCode();
@@ -56,9 +71,5 @@ namespace CsRopExample.DomainModels
             return this.Email.Equals(other.Email);
         }
 
-        public override string ToString()
-        {
-            return this.Email;
-        }
     }
 }

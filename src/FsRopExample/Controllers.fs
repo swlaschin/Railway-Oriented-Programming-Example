@@ -36,12 +36,12 @@ module CustomersControllerHelper =
         | CustomerIsRequired
         | CustomerIdMustBePositive
         | FirstNameIsRequired
-        | FirstNameIsTooLong
+        | FirstNameMustNotBeMoreThan10Chars
         | LastNameIsRequired
-        | LastNameIsTooLong
+        | LastNameMustNotBeMoreThan10Chars
         | EmailIsRequired
-        | EmailIsNotAValidFormat
-        | EmailIsTooLong -> 
+        | EmailMustContainAtSign
+        | EmailMustNotBeMoreThan20Chars -> 
             BadRequest (sprintf "%A" msg)
 
         // Events
@@ -66,7 +66,7 @@ module CustomersControllerHelper =
         |> List.sort 
         |> List.head  // we can assume at least one        
 
-    // return all the BadRequests in the list of messages as string
+    // return all the BadRequests in the list of messages as a single string
     let badRequestsToStr msgs = 
         msgs 
         |> List.map classify
@@ -74,7 +74,7 @@ module CustomersControllerHelper =
         |> List.map (sprintf "ValidationError: %s; ")
         |> List.reduce (+)
 
-    // return all the DomainEvents in the list of messages as string
+    // return all the DomainEvents in the list of messages as a single string
     let domainEventsToStr msgs = 
         msgs 
         |> List.map classify

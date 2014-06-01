@@ -1,7 +1,8 @@
 ﻿namespace FsRopExample.Dtos
 
+open System
 open FsRopExample.Rop
-open FsRopExample.CommonTypes
+open FsRopExample.DomainPrimitiveTypes
 open FsRopExample.DomainModel
 
 // ============================== 
@@ -75,26 +76,28 @@ module DtoConverter =
         if dto = null then 
             fail CustomerIsRequired
         else
+            let customerIdOrError = 
+                createCustomerId dto.Id
             let nameOrError = 
                 createPersonalName
                 <!> createFirstName dto.FirstName
                 <*> createLastName dto.LastName
 
             createCustomer 
-            <!> createCustomerId dto.Id
+            <!> customerIdOrError 
             <*> nameOrError
-            <*> createEmail dto.Email
+            <*> createEmail dto.Email //inline this one
 
     /// Convert a domain Customer into a DTO.
     /// There is no possibility of an error 
     /// because the Customer type has stricter constraints than DTO.
     let customerToDto(cust:Customer) =
         // extract the raw int id from the CustomerId wrapper
-        let (CustomerId custId) = cust.Id
+        let custIdInt = cust.Id |> CustomerId.apply id
 
         // create the object and set the properties
         let customerDto = CustomerDto()
-        customerDto.Id <- custId
+        customerDto.Id <- custIdInt 
         customerDto.FirstName <- cust.Name.FirstName |> String10.apply id
         customerDto.LastName <- cust.Name.LastName |> String10.apply id
         customerDto.Email <- cust.Email |> EmailAddress.apply id

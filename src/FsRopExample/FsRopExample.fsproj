@@ -85,12 +85,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Rop.fs" />
-    <Compile Include="CommonTypes.fsi" />
-    <Compile Include="CommonTypes.fs" />
+    <Compile Include="DomainPrimitiveTypes.fsi" />
+    <Compile Include="DomainPrimitiveTypes.fs" />
     <Compile Include="DomainModel.fs" />
-    <Compile Include="Dtos.fs" />
     <Compile Include="SqlDatabase.fs" />
     <Compile Include="DataAccessLayer.fs" />
+    <Compile Include="Dtos.fs" />
     <Compile Include="Controllers.fs" />
     <Compile Include="DependencyResolver.fs" />
     <Compile Include="MessageLoggingHandler.fs" />

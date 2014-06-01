@@ -90,7 +90,8 @@ let mapR = liftR
 /// and pass thru the result
 let successTee f result = 
     let fSuccess (x,msgs) = 
-        f (x,msgs); Success (x,msgs) 
+        f (x,msgs)
+        Success (x,msgs) 
     let fFailure errs = Failure errs 
     either fSuccess fFailure result
 
@@ -99,8 +100,19 @@ let successTee f result =
 let failureTee f result = 
     let fSuccess (x,msgs) = Success (x,msgs) 
     let fFailure errs = 
-        f errs; Failure errs 
+        f errs
+        Failure errs 
     either fSuccess fFailure result
+
+/// given an Rop, map the errors to a different error type
+let mapMessagesR f result = 
+    match result with 
+    | Success (x,msgs) -> 
+        let msgs' = List.map f msgs
+        Success (x, msgs')
+    | Failure errors -> 
+        let errors' = List.map f errors 
+        Failure errors' 
 
 /// given an Rop, return the value in the success case 
 /// other determine the value to return by 

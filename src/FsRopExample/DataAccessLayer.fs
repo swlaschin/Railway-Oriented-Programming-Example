@@ -1,7 +1,8 @@
 ﻿module FsRopExample.DataAccessLayer
 
+open System
 open FsRopExample.Rop
-open FsRopExample.CommonTypes
+open FsRopExample.DomainPrimitiveTypes
 open FsRopExample.DomainModel
 open FsRopExample.SqlDatabase    
 
@@ -14,7 +15,7 @@ type ICustomerDao =
     // Note that the F# version traps sql exceptions and will return a DatabaseError
 
     /// Return the customer with the given CustomerId, or CustomerNotFound error if not found
-    abstract GetById : CustomerId -> RopResult<Customer,DomainMessage>
+    abstract GetById : CustomerId.T -> RopResult<Customer,DomainMessage>
     // Note that the F# version allows errors and messages to be passed back.
     // Compare with the C# version, where null is used to indicate a missing customer
 
@@ -90,11 +91,11 @@ let fromDbCustomerIdiomatic (dbCustomer:DbCustomer) =
 let toDbCustomer(cust:Customer) =
 
     // extract the raw int id from the CustomerId wrapper
-    let (CustomerId custId) = cust.Id
+    let custIdInt = cust.Id |> CustomerId.apply id
 
     // create the object and set the properties
     let dbCustomer = DbCustomer()
-    dbCustomer.Id <- custId
+    dbCustomer.Id <- custIdInt
     dbCustomer.FirstName <- cust.Name.FirstName |> String10.apply id
     dbCustomer.LastName <- cust.Name.LastName |> String10.apply id
     dbCustomer.Email <- cust.Email |> EmailAddress.apply id
@@ -110,6 +111,18 @@ let (|KeyNotFound|DuplicateKey|Timeout|Other|) (ex:SqlException) =
     | "Timeout" -> Timeout
     | _ -> Other
 
+let failureFromException (ex:SqlException) =
+    // This code handles exceptions coming from the database. 
+    // It uses the utility function above to find out what kind of exception 
+    // it is and and then return an appropriate error code
+    match ex with
+    | Timeout -> 
+        fail DatabaseTimeout
+    | _ -> 
+        // treat all other errors the same
+        fail (DatabaseError ex.Message)
+
+
 /// An implementation of a ICustomerDao 
 type CustomerDao() =
 
@@ -122,36 +135,39 @@ type CustomerDao() =
             let fSuccess (x,_) = Some x  // keep success
             let fFailure _ = None // discard failure
 
-            db.Customers() 
-            |> Seq.map fromDbCustomer
-            // At this point we have a sequence of rop results, one for each customer.
-            // What should we do if some are failures? 
-            // For now, we choose to ignore the failures and just return the successes
-            |> Seq.choose (either fSuccess fFailure)
-            |> succeed
-       
-        member this.GetById (CustomerId custId) = 
+            try
+                db.Customers() 
+                |> Seq.map fromDbCustomer
+                // At this point we have a sequence of rop results, one for each customer.
+                // What should we do if some are failures? 
+                // For now, we choose to ignore the failures and just return the successes
+                |> Seq.choose (either fSuccess fFailure)
+                |> succeed
+            with
+            | :? SqlException as ex -> failureFromException ex
+                // This code (unlike the C# version) DOES trap exceptions coming from the database. 
+                // It uses the utility function above to find out what kind of exception 
+                // it is and and then return an appropriate error code
+
+        member this.GetById customerId = 
             let db = new DbContext()
-    
+
+            // extract the raw int id from the CustomerId wrapper
+            let custIdInt = customerId |> CustomerId.apply id    
+
             try
                 db.Customers()
-                |> Seq.tryFind (fun sql -> sql.Id = custId)
+                |> Seq.tryFind (fun sql -> sql.Id = custIdInt)
                 |> Option.map fromDbCustomer
                 // At this point we might or might not have a customer
                 // In the C# code, we just return null if missing.
                 // In F#, we can do better and return an explicit error code "CustomerNotFound"
                 |> failIfNoneR CustomerNotFound
             with
-            | :? SqlException as ex -> 
+            | :? SqlException as ex -> failureFromException ex
                 // This code (unlike the C# version) DOES trap exceptions coming from the database. 
                 // It uses the utility function above to find out what kind of exception 
                 // it is and and then return an appropriate error code
-                match ex with
-                | Timeout -> 
-                    fail DatabaseTimeout
-                | _ -> 
-                    // treat all other errors the same
-                    fail (DatabaseError ex.Message)
 
         member this.Upsert (customer:Customer) = 
             let db = new DbContext()
@@ -160,13 +176,13 @@ type CustomerDao() =
                 let newDbCust = toDbCustomer customer
 
                 // extract the raw int id from the CustomerId wrapper
-                let (CustomerId custId) = customer.Id
+                let custIdInt = customer.Id |> CustomerId.apply id
 
                 // Try to find an existing customer.
                 // Return a optional DbCustomer            
                 let existingDbCustOpt =
                     db.Customers()
-                    |> Seq.tryFind (fun sql -> sql.Id = custId)
+                    |> Seq.tryFind (fun sql -> sql.Id = custIdInt)
 
                 // do different actions depending on
                 // whether the customer was found or not
@@ -192,15 +208,9 @@ type CustomerDao() =
                         succeed ()  
 
             with
-            | :? SqlException as ex -> 
+            | :? SqlException as ex -> failureFromException ex
                 // This code (unlike the C# version) DOES trap exceptions coming from the database. 
                 // It uses the utility function above to find out what kind of exception 
                 // it is and and then return an appropriate error code
-                match ex with
-                | Timeout -> 
-                    fail DatabaseTimeout
-                | _ -> 
-                    // treat all other errors the same
-                    fail (DatabaseError ex.Message)
 
     

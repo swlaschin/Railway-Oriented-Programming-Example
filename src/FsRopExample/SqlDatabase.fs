@@ -1,7 +1,7 @@
 ﻿namespace FsRopExample.SqlDatabase
 
 open FsRopExample.Rop
-open FsRopExample.CommonTypes
+open FsRopExample.DomainPrimitiveTypes
 open FsRopExample.DomainModel
 open System.Collections.Generic
 
