@@ -524,3 +524,31 @@ Thanks!
 -- Scott
 
 
+## Postscript: Relationship to the Either monad
+
+Any Haskellers reading this will immediately recognize this approach as 
+just [the `Either` monad](http://www.haskellforall.com/2012/07/errors-10-simplified-error-handling.html),
+specialized to use a list of enums for the Left case.  
+
+I'm certainly not trying to claim that I invented this approach at all (although I do lay claim to the metaphor).  So why did I not use the standard Haskell terminology?   
+
+A number of reasons...
+
+1) Most people coming to F# are not familiar with monads. I'd rather present an approach that is
+visual, non-intimidating, and generally more intuitive for many people.
+I believe that once you are familiar with this particular approach, the more high level concepts are easier to grasp later.
+
+2) F# does not have type classes, and so you don't really have a reusable way to do monads (although the [FSharpX library](https://github.com/fsprojects/fsharpx/blob/master/src/FSharpx.Core/ComputationExpressions/Monad.fs)
+makes a valiant attempt).  This means the `Rop.fs` library defines all its functions from scratch.
+(In some ways though, this isolation can be helpful because there are no external dependencies at all.)
+
+3) `Either` is too general a concept.
+My goal here is to provide an "off-the-shelf" template that is versatile enough to be
+used in almost all situations, yet constrained enough to enforce a consistent style. 
+That is,  there is basically only one way to write the code. This is extremely helpful to anyone who has to maintain the code later, as they can immediately understand how it is put together.  
+
+[Even in the Haskell community, there is no consistent approach to error handling](http://www.randomhacks.net/2007/03/10/haskell-8-ways-to-report-errors/), although
+the [Haskell `errors` package](http://hackage.haskell.org/package/errors) has a similar goal, I believe.
+
+
+
