@@ -55,8 +55,8 @@ module EmailAddress =
 module CustomerId  =
     type T = CustomerId of int
 
-    // Create a CustomerId from a nullable int
-    // I'm using nullable just to demonstrate how to use it as input
+    // Create a CustomerId from an int
+    // It must be positive.
     let create (i: int) =
         if i < 1 then
             fail MustBePositiveInteger
